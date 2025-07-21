@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Qarzdorlar Ro‘yxati</title>
+  <style>
+    body { font-family: Arial; margin: 20px; transition: 0.3s; }
+    h2 { text-align: center; }
+    button { padding: 5px 10px; border: 1px solid black; cursor: pointer; background: white; transition: 0.3s; }
+    button:hover { background: black; color: white; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    td, th { border: 1px solid black; padding: 5px; text-align: center; }
+    tr:hover td { background: #f0f0f0; }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .controls { margin-top: 10px; display: none; }
+    #detailsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 20px; width: 450px; border-radius: 8px; }
+    .modal-content input { margin: 5px 5px 0 0; padding: 5px; }
+    .stats { margin-top: 20px; padding: 10px; border: 1px solid black; }
+    .dark-mode { background: #121212; color: white; }
+    .dark-mode button { background: white; color: black; }
+    .dark-mode td, .dark-mode th { border: 1px solid white; }
+    .dark-mode tr:hover td { background: #333; }
+    #themeToggle { position: fixed; top: 10px; right: 10px; background: none; border: none; }
+    #themeToggle img { width: 30px; transition: 0.3s; cursor: pointer; }
+    #themeToggle img:hover { transform: scale(1.2); }
+    #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white;
+      display: flex; justify-content: center; align-items: center; }
+    #historyModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .history-box { background: white; padding: 20px; width: 400px; border-radius: 8px; max-height: 80%; overflow-y: auto; }
+  </style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div style="text-align:center;">
+    <h3>Saytga Kirish</h3>
+    <input type="password" id="loginPass" placeholder="Parol kiriting">
+    <br><br>
+    <button onclick="checkLogin()">Kirish</button>
+  </div>
+</div>
+
+<button id="themeToggle" onclick="toggleTheme()">
+  <img id="themeIcon" src="https://cdn-icons-png.flaticon.com/512/3645/3645685.png" alt="Rejim">
+</button>
+
+<h2>Qarzdorlar Ro‘yxati</h2>
+
+<div class="header">
+  <button onclick="toggleControls()">Qarzdor Qo‘shish</button>
+  <input type="text" id="searchBox" placeholder="Qidirish" oninput="searchName()">
+  <button onclick="openHistory()">Tarix</button>
+</div>
+
+<div class="controls" id="addControls">
+  <input type="text" id="newName" placeholder="Ism kiriting">
+  <button onclick="addName()">Qo‘shish</button>
+</div>
+
+<table id="nameTable"></table>
+
+<div class="stats">
+  <h4>Umumiy Statistikasi</h4>
+  <p><strong>Qarzdorlar soni:</strong> <span id="totalDebtors">0</span></p>
+  <p><strong>Umumiy qarz summasi:</strong> <span id="totalDebtSum">0</span> so‘m</p>
+  <p><strong>Eng ko‘p qarzdor:</strong> <span id="topDebtor">-</span></p>
+</div>
+
+<div id="detailsModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Qarzdor tafsilotlari</h3>
+    <table>
+      <thead>
+        <tr><th>Mahsulot</th><th>Sana</th><th>Summa</th></tr>
+      </thead>
+      <tbody id="detailsBody"></tbody>
+    </table>
+    <br>
+    <input type="text" id="productInput" placeholder="Mahsulot" style="width: 100px;">
+    <input type="date" id="dateInput" style="width: 140px;">
+    <input type="number" id="amountInput" placeholder="Summa" style="width: 80px;">
+    <button onclick="addProduct()">Qo‘shish</button>
+    <br><br>
+    <input type="number" id="payAmountInput" placeholder="To‘langan summa" style="width: 150px;">
+    <button onclick="payDebt()">To‘lash</button>
+    <br><br>
+    <button onclick="closeModal()">Yopish</button>
+  </div>
+</div>
+
+<div id="historyModal">
+  <div class="history-box">
+    <h3>To‘langanlar Tarixi</h3>
+    <ul id="historyList"></ul>
+    <br>
+    <button onclick="closeHistory()">Yopish</button>
+  </div>
+</div>
+
+<script>
+let names = JSON.parse(localStorage.getItem('names')) || [];
+let qarzdorDetails = JSON.parse(localStorage.getItem('qarzdorDetails')) || {};
+let history = JSON.parse(localStorage.getItem('history')) || [];
+let activeName = '';
+
+function renderTable(filter = '') {
+  const table = document.getElementById('nameTable');
+  table.innerHTML = '';
+  const filtered = names.filter(ism => ism.toLowerCase().includes(filter.toLowerCase()));
+  filtered.forEach(ism => {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.textContent = ism;
+    td.onclick = () => openDetails(ism);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  });
+  updateStats();
+}
+
+function addName() {
+  const input = document.getElementById('newName');
+  const name = input.value.trim();
+  if (name && !names.includes(name)) {
+    names.push(name);
+    localStorage.setItem('names', JSON.stringify(names));
+    qarzdorDetails[name] = [];
+    localStorage.setItem('qarzdorDetails', JSON.stringify(qarzdorDetails));
+    renderTable();
+    input.value = '';
+  }
+}
+
+function toggleControls() {
+  const box = document.getElementById('addControls');
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+function searchName() {
+  renderTable(document.getElementById('searchBox').value);
+}
+
+function openDetails(name) {
+  activeName = name;
+  const modal = document.getElementById('detailsModal');
+  document.getElementById('modalTitle').innerText = name;
+  const tbody = document.getElementById('detailsBody');
+  tbody.innerHTML = '';
+  let jami = 0;
+  (qarzdorDetails[name] || []).forEach(item => {
+    tbody.innerHTML += `<tr><td>${item.mahsulot}</td><td>${item.sana}</td><td>${item.summa}</td></tr>`;
+    jami += parseInt(item.summa);
+  });
+  if (jami > 0) {
+    tbody.innerHTML += `<tr><td colspan="2"><strong>Jami:</strong></td><td><strong>${jami}</strong></td></tr>`;
+  } else {
+    tbody.innerHTML = '<tr><td colspan="3">Maʼlumot topilmadi</td></tr>';
+  }
+  modal.style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('detailsModal').style.display = 'none';
+}
+
+function addProduct() {
+  const mahsulot = document.getElementById('productInput').value.trim() || '---';
+  const sana = document.getElementById('dateInput').value || '---';
+  const summa = document.getElementById('amountInput').value.trim();
+  if (summa) {
+    qarzdorDetails[activeName].push({ mahsulot, sana, summa });
+    localStorage.setItem('qarzdorDetails', JSON.stringify(qarzdorDetails));
+    openDetails(activeName);
+    document.getElementById('productInput').value = '';
+    document.getElementById('dateInput').value = '';
+    document.getElementById('amountInput').value = '';
+  } else {
+    alert("Summa majburiy!");
+  }
+}
+
+function payDebt() {
+  const payAmount = parseInt(document.getElementById('payAmountInput').value.trim());
+  if (!payAmount || payAmount <= 0) return alert("To‘langan summani kiriting!");
+  let qarzlar = qarzdorDetails[activeName] || [];
+  let remaining = payAmount;
+  for (let i = 0; i < qarzlar.length; i++) {
+    let q = parseInt(qarzlar[i].summa);
+    if (q <= remaining) {
+      remaining -= q;
+      qarzlar[i].summa = 0;
+    } else {
+      qarzlar[i].summa = q - remaining;
+      remaining = 0;
+    }
+    if (remaining === 0) break;
+  }
+  qarzdorDetails[activeName] = qarzlar.filter(x => x.summa > 0);
+  if (qarzdorDetails[activeName].length === 0) {
+    const idx = names.indexOf(activeName);
+    if (idx > -1) names.splice(idx, 1);
+    const sana = new Date().toLocaleDateString();
+    history.push({ ism: activeName, summa: payAmount, sana });
+  }
+  localStorage.setItem('names', JSON.stringify(names));
+  localStorage.setItem('qarzdorDetails', JSON.stringify(qarzdorDetails));
+  localStorage.setItem('history', JSON.stringify(history));
+  document.getElementById('payAmountInput').value = '';
+  closeModal();
+  renderTable();
+}
+
+function updateStats() {
+  document.getElementById('totalDebtors').innerText = names.length;
+  let total = 0, max = 0, top = '-';
+  names.forEach(name => {
+    const sum = (qarzdorDetails[name] || []).reduce((a, b) => a + parseInt(b.summa), 0);
+    if (sum > max) { max = sum; top = name; }
+    total += sum;
+  });
+  document.getElementById('totalDebtSum').innerText = total;
+  document.getElementById('topDebtor').innerText = top;
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+  const icon = document.getElementById('themeIcon');
+  icon.src = document.body.classList.contains('dark-mode') ?
+    "https://cdn-icons-png.flaticon.com/512/3645/3645695.png" :
+    "https://cdn-icons-png.flaticon.com/512/3645/3645685.png";
+}
+
+function checkLogin() {
+  const pass = document.getElementById('loginPass').value;
+  if (pass === '12345') document.getElementById('loginScreen').style.display = 'none';
+  else alert("Noto‘g‘ri parol!");
+}
+
+function openHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  if (history.length === 0) {
+    list.innerHTML = '<li>Hech qanday tarix yo‘q</li>';
+  } else {
+    history.slice().reverse().forEach(h => {
+      list.innerHTML += `<li><b>${h.ism}</b> — ${h.summa} so‘m, ${h.sana}</li>`;
+    });
+  }
+  document.getElementById('historyModal').style.display = 'flex';
+}
+
+function closeHistory() {
+  document.getElementById('historyModal').style.display = 'none';
+}
+
+document.getElementById('newName').addEventListener('keypress', e => { if (e.key === 'Enter') addName(); });
+document.getElementById('loginPass').addEventListener('keypress', e => { if (e.key === 'Enter') checkLogin(); });
+
+renderTable();
+</script>
+
+</body>
+</html>
+
+
+
+

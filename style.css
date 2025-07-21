@@ -1,0 +1,209 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 10px;
+    transition: 0.3s;
+}
+
+h2 {
+    text-align: center;
+    font-size: 24px;
+}
+
+button {
+    padding: 8px 12px;
+    cursor: pointer;
+    border: 1px solid black;
+    background: white;
+    transition: 0.3s;
+    font-size: 16px;
+}
+
+button:hover {
+    background: black;
+    color: white;
+}
+
+table {
+    border-collapse: collapse;
+    margin-top: 10px;
+    width: 100%;
+    word-break: break-word;
+}
+
+td, th {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+    font-size: 14px;
+}
+
+tr:hover td {
+    background: #f0f0f0;
+}
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.header input {
+    flex: 1;
+    padding: 5px;
+    font-size: 16px;
+}
+
+.controls {
+    margin-top: 10px;
+    display: none;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.controls input {
+    flex: 1;
+    padding: 5px;
+    font-size: 14px;
+}
+
+#detailsModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 15px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.modal-content input {
+    margin-top: 5px;
+    padding: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.stats {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid black;
+    font-size: 16px;
+}
+
+.dark-mode {
+    background: #121212;
+    color: white;
+}
+
+.dark-mode button {
+    background: white;
+    color: black;
+}
+
+.dark-mode td, .dark-mode th {
+    border: 1px solid white;
+}
+
+.dark-mode tr:hover td {
+    background: #333;
+}
+
+#themeToggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+#themeToggle img {
+    width: 30px;
+    transition: 0.3s;
+}
+
+#themeToggle img:hover {
+    transform: scale(1.2);
+}
+
+#loginScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1002;
+}
+
+@media (max-width: 480px) {
+    h2 {
+        font-size: 18px;
+    }
+
+    button {
+        padding: 6px 8px;
+        font-size: 14px;
+    }
+
+    td, th {
+        font-size: 12px;
+    }
+
+    .stats {
+        font-size: 14px;
+    }
+
+    #themeToggle img {
+        width: 24px;
+    }
+
+    .modal-content {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 360px) {
+    h2 {
+        font-size: 16px;
+    }
+
+    button {
+        padding: 5px 6px;
+        font-size: 12px;
+    }
+
+    td, th {
+        font-size: 10px;
+        padding: 3px;
+    }
+
+    .stats {
+        font-size: 12px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
